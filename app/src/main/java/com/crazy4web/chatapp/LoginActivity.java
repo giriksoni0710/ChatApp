@@ -23,7 +23,7 @@ import com.google.firebase.auth.PhoneAuthProvider;
 
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     private EditText phone, code;
     private Button btn;
@@ -36,8 +36,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         FirebaseApp.initializeApp(this);
 
+
+        // Checking if user is actually logged in.
         userIsLoggedIn();
 
         phone = findViewById(R.id.phone);
@@ -48,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 if(mverificationID!=null){
                     VerifyPhoneNumberWithCode();
                 }
@@ -99,6 +103,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
            if(task.isSuccessful()){
+
+               // Getting the current user once task is successful
+               FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+
+
+
+
                userIsLoggedIn();
            }
 

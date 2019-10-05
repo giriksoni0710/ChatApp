@@ -3,6 +3,8 @@
     package="com.crazy4web.chatapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_CONTACTS"></uses-permission>
+<uses-permission android:name="android.permission.WRITE_CONTACTS"></uses-permission>
 
     <application
         android:allowBackup="true"
@@ -14,7 +16,7 @@
         <activity android:name=".FindUserActivity"></activity>
         <activity android:name=".Main2Activity"></activity>
         <activity android:name=".MainPage"></activity>
-        <activity android:name=".MainActivity">
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
