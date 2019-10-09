@@ -20,7 +20,14 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class LoginActivity extends AppCompatActivity {
@@ -105,7 +112,42 @@ public class LoginActivity extends AppCompatActivity {
            if(task.isSuccessful()){
 
                // Getting the current user once task is successful
-               FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+              final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+               if(user != null){
+
+                   // Referencing a child User in the database. and pointing to the UserID of the user
+
+                   final DatabaseReference muserDB = FirebaseDatabase.getInstance().getReference().child("user").child(user.getUid());
+
+                   // getting value of the user by using a listener
+
+                   muserDB.addListenerForSingleValueEvent(new ValueEventListener() {
+                       @Override
+                       public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                           if(!dataSnapshot.exists()){
+
+                               Map<String, Object> userMap = new HashMap<>();
+                               userMap.put("phone",user.getPhoneNumber());
+
+                               userMap.put("name",user.getPhoneNumber());
+
+                               muserDB.updateChildren(userMap);
+                           }
+                       }
+
+                       @Override
+                       public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                           
+
+
+                       }
+                   });
+
+
+               }
 
 
 
