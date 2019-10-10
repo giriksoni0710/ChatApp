@@ -1,5 +1,6 @@
 package com.crazy4web.chatapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,6 +15,13 @@ import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.LinearLayout;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -48,6 +56,7 @@ public class FindUserActivity extends AppCompatActivity {
 
     private void getContactList(){
 
+        String ISOPrefix = getCountryISO();
         Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,null,null, null);
 
     //We will add the contact names to the userList using userObject class
@@ -57,6 +66,24 @@ public class FindUserActivity extends AppCompatActivity {
 
             String number = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
 
+
+            // removing the space and special characters in a number
+
+            number = number.replace(" ","");
+            number = number.replace("-","");
+            number = number.replace("(","");
+            number = number.replace(")","");
+
+            // just add prefix if there is no prefix specified in the number]
+
+            if(!String.valueOf(number.charAt(0)).equals("+")){
+
+
+                number = ISOPrefix + number;
+
+            }
+
+
             Log.d("name",name+":"+number);
             userObject mcontact = new userObject(name,number);
 
@@ -64,9 +91,61 @@ public class FindUserActivity extends AppCompatActivity {
 
             muserListAdapter.notifyDataSetChanged();
 
+            getUSerDetails(mcontact);
 
         }
 
+    }
+
+    //fetching data from database and make sure it exists there
+
+    private void getUSerDetails(userObject mcontact) {
+
+        DatabaseReference muserDb = FirebaseDatabase.getInstance().getReference().child("user");
+
+        // using query to match data of the current user in Database
+
+        Query query = muserDb.orderByChild("phone").equalTo(mcontact.getPhone());
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+
+                    String Phone = "";
+                    String name = "";
+
+                for(DataSnapshot childSnapShot: dataSnapshot.getChildren()){
+
+
+                    if(childSnapShot.child("phone").getValue()!=null){
+                        Phone = childSnapShot.child("phone").getValue().toString();
+                    }
+
+
+                    if(childSnapShot.child("name").getValue()!=null){
+
+                        Phone = childSnapShot.child("name").getValue().toString();
+
+                    }
+
+
+                    userObject muser = new userObject(name, Phone);
+
+                    userList.add(muser);
+                    muserListAdapter.notifyDataSetChanged();
+
+                    return;
+                }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     //fetching country ISO to identify the iso code for a country
@@ -78,16 +157,16 @@ public class FindUserActivity extends AppCompatActivity {
 
         TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(getApplicationContext().TELEPHONY_SERVICE);
 
-        if(telephonyManager.getNetworkCountryIso()!=null){
-            if(!telephonyManager.getNetworkCountryIso().toString().equals("")){
+        if(telephonyManager.getNetworkCountryIso()!=null)
+            if(!telephonyManager.getNetworkCountryIso().toString().equals(""))
 
                 iso = telephonyManager.getNetworkCountryIso().toString();
 
-            }
 
-        }
 
-        return iso;
+
+
+        return CountryToPhonePrefix.getPhone(iso);
 
     }
 

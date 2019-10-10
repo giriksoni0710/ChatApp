@@ -135,12 +135,14 @@ public class LoginActivity extends AppCompatActivity {
 
                                muserDB.updateChildren(userMap);
                            }
+
+                           userIsLoggedIn();
                        }
 
                        @Override
                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                           
+
 
 
                        }
